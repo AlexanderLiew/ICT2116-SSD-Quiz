@@ -24,4 +24,21 @@ if [ ! -s "$CERT_FILE" ] || [ ! -s "$KEY_FILE" ]; then
     chmod 0644 "$CERT_FILE"
 fi
 
+if [ "${1:-}" = "nginx" ]; then
+    attempt=1
+    max_attempts=60
+
+    echo "Waiting for the application service..."
+    until curl -fsS --max-time 2 http://app:3000/health >/dev/null 2>&1; do
+        if [ "$attempt" -ge "$max_attempts" ]; then
+            echo "Application service was not ready after $max_attempts attempts." >&2
+            exit 1
+        fi
+
+        attempt=$((attempt + 1))
+        sleep 2
+    done
+    echo "Application service is ready."
+fi
+
 exec "$@"
