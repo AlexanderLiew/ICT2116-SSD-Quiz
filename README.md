@@ -1,5 +1,7 @@
 # ICT2216 Secure Software Development Practical
 
+Repository: [AlexanderLiew/ICT2116-SSD-Quiz](https://github.com/AlexanderLiew/ICT2116-SSD-Quiz)
+
 Student: Liew Jin Hsuen Alexander (`2401499`)
 
 Email: `2401499@sit.singaporetech.edu.sg`
