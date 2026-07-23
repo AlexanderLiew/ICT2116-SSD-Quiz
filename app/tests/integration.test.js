@@ -1,4 +1,4 @@
-const assert = require('node:assert/strict');
+const { expect } = require('chai');
 const path = require('node:path');
 const { Pool } = require('pg');
 const request = require('supertest');
@@ -52,10 +52,10 @@ describe('Q5 account-creation integration', () => {
   it('serves the account-creation form', async () => {
     const response = await request(app).get('/').expect(200);
 
-    assert.match(response.text, /<form[^>]+action="\/account"/);
-    assert.match(response.text, /<input[^>]+name="username"/);
-    assert.match(response.text, /<input[^>]+name="password"/);
-    assert.match(response.text, />Create account<\/button>/);
+    expect(response.text).to.match(/<form[^>]+action="\/account"/);
+    expect(response.text).to.match(/<input[^>]+name="username"/);
+    expect(response.text).to.match(/<input[^>]+name="password"/);
+    expect(response.text).to.match(/>Create account<\/button>/);
   });
 
   it('creates exactly one database record for a valid request', async () => {
@@ -69,17 +69,17 @@ describe('Q5 account-creation integration', () => {
       .send({ username, password })
       .expect(200);
 
-    assert.match(response.text, /<title>Welcome<\/title>/);
-    assert.equal(response.headers['cache-control'], 'no-store');
+    expect(response.text).to.match(/<title>Welcome<\/title>/);
+    expect(response.headers['cache-control']).to.equal('no-store');
 
     const result = await pool.query(
       'SELECT username, created_at FROM "2401499" WHERE username = $1',
       [username],
     );
-    assert.equal(result.rowCount, 1);
-    assert.equal(result.rows[0].username, username);
-    assert.ok(result.rows[0].created_at instanceof Date);
-    assert.equal(await countTestRecords(), beforeCount + 1);
+    expect(result.rowCount).to.equal(1);
+    expect(result.rows[0].username).to.equal(username);
+    expect(result.rows[0].created_at).to.be.an.instanceOf(Date);
+    expect(await countTestRecords()).to.equal(beforeCount + 1);
   });
 
   it('keeps the student table free of password columns', async () => {
@@ -90,10 +90,9 @@ describe('Q5 account-creation integration', () => {
        ORDER BY ordinal_position`,
     );
 
-    assert.deepEqual(
+    expect(
       result.rows.map((row) => row.column_name),
-      ['id', 'username', 'created_at'],
-    );
+    ).to.deep.equal(['id', 'username', 'created_at']);
   });
 
   for (const invalidCase of [
@@ -134,9 +133,9 @@ describe('Q5 account-creation integration', () => {
         })
         .expect(400);
 
-      assert.ok(response.text.includes(invalidCase.message));
-      assert.match(response.text, /<title>Create account<\/title>/);
-      assert.equal(await countTestRecords(), beforeCount);
+      expect(response.text).to.include(invalidCase.message);
+      expect(response.text).to.match(/<title>Create account<\/title>/);
+      expect(await countTestRecords()).to.equal(beforeCount);
     });
   }
 
@@ -149,8 +148,8 @@ describe('Q5 account-creation integration', () => {
       .send({ username: '', password: `Q5 valid phrase ${Date.now()}` })
       .expect(400);
 
-    assert.match(response.text, /Username is required\./);
-    assert.equal(await countTestRecords(), beforeCount);
+    expect(response.text).to.match(/Username is required\./);
+    expect(await countTestRecords()).to.equal(beforeCount);
   });
 
   it('HTML-escapes username and password output', async () => {
@@ -163,13 +162,13 @@ describe('Q5 account-creation integration', () => {
       .send({ username, password })
       .expect(200);
 
-    assert.ok(response.text.includes(
+    expect(response.text).to.include(
       `${testPrefix}-&lt;script&gt;alert(1)&lt;/script&gt;`,
-    ));
-    assert.ok(response.text.includes(
+    );
+    expect(response.text).to.include(
       'Q5 safe &lt;strong&gt;phrase&lt;/strong&gt;',
-    ));
-    assert.ok(!response.text.includes(username));
-    assert.ok(!response.text.includes(password));
+    );
+    expect(response.text).not.to.include(username);
+    expect(response.text).not.to.include(password);
   });
 });

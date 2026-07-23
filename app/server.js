@@ -139,7 +139,6 @@ app.post('/account', async (request, response, next) => {
 });
 
 app.use((error, _request, response, _next) => {
-  void _next;
   console.error('Request failed without logging submitted form data:', error.message);
   response.status(500).type('html').send(
     renderHome('The request could not be completed. Please try again.'),

@@ -22,6 +22,9 @@ export default [
   },
   {
     files: ['server.js', 'src/**/*.js'],
+    rules: {
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'commonjs',
