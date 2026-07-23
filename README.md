@@ -4,8 +4,8 @@ Student: Liew Jin Hsuen Alexander (`2401499`)
 
 Email: `2401499@sit.singaporetech.edu.sg`
 
-This repository implements Questions 1–4 of the ICT2216 practical test.
-Questions 5–9 are intentionally not implemented.
+This repository implements Questions 1–6 of the ICT2216 practical test.
+Questions 7–9 are intentionally not implemented.
 
 ## Architecture
 
@@ -144,6 +144,72 @@ is HTML-escaped and the value is never placed in a URL, cookie, browser
 storage, application log, or database. Password rotation is not applicable to
 this one-time creation exercise because no password is retained.
 
+## Q5 and Q6 automated security testing
+
+The **Q5-Q6 Security Testing** GitHub Actions workflow runs on pushes to
+`main`, pull requests targeting `main`, and manual dispatch. Its four jobs are:
+
+- **Integration test:** Mocha and Supertest exercise the Express request,
+  password policy, real PostgreSQL queries, inserts, schema, escaping, and
+  invalid-submission behavior.
+- **UI test:** Selenium WebDriver and headless Chrome test the form, short and
+  common password errors, successful creation, Welcome display, Logout, and
+  HTML escaping through a temporary HTTP-only CI endpoint.
+- **Dependency check:** `npm audit --omit=dev` and OWASP Dependency-Check scan
+  `package-lock.json`; Dependency-Check fails at CVSS 7 or higher.
+- **ESLint security:** ESLint 9 flat configuration, the recommended
+  `eslint-plugin-security` rules, SARIF generation, artifact upload, and
+  best-effort GitHub Code Scanning upload.
+
+CI uses an isolated PostgreSQL service and unique test usernames. Test cleanup
+deletes only records created by that test run. The temporary HTTP endpoint is
+used only inside CI; public application behavior remains the Q1/Q2 HTTPS
+endpoint with HTTP redirected to HTTPS.
+
+Generated reports, screenshots, coverage, browser profiles, dependencies, and
+container data are ignored by Git.
+
+### Local test commands
+
+Install reproducibly from the `app` directory:
+
+```sh
+npm ci
+npm audit --omit=dev
+npm run lint
+npm run lint:security
+npm run lint:sarif
+npm run test:integration
+npm run test:ui
+```
+
+The integration and UI commands require an isolated PostgreSQL database through
+`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`. Set
+`PASSWORD_FILE` to the repository's complete NCSC file. UI tests also require
+the application running over HTTP and `UI_BASE_URL` pointing to it. The GitHub
+workflow provisions these dependencies automatically.
+
+Successful SARIF generation writes `app/reports/eslint-results.sarif`; the
+directory is intentionally not committed.
+
+### Workflow results and artifacts
+
+Open the
+[Q5-Q6 workflow](https://github.com/AlexanderLiew/ICT2116-SSD-Quiz/actions/workflows/q5-q6-security-testing.yml)
+to inspect each job and download:
+
+- `Dependency-Check-Report`
+- `ESLint-Security-Report`
+- `UI-Failure-Screenshots` only when UI testing fails
+
+An NVD API key is optional because the pinned Dependency-Check action includes
+an updated vulnerability database. To provide one, create a repository Actions
+secret named `NVD_API_KEY`; the workflow never prints or commits it.
+
+GitHub SARIF upload requires Code Scanning availability and
+`security-events: write`. The SARIF artifact is still uploaded if repository
+visibility, plan, or token permissions prevent Code Scanning upload.
+
 ## Verification
 
 ```sh
@@ -194,6 +260,9 @@ webserver/                  Nginx TLS generation and application reverse proxy
 app/                        Express app, frontend validation, and package lock
 database/init.sql           Idempotent PostgreSQL table definitions
 database/100k-...txt        Complete NCSC common-password source
+.github/workflows/          Q5/Q6 GitHub Actions workflow
+app/tests/                  Mocha/Supertest and Selenium test suites
+app/eslint.config.mjs       ESLint 9 flat security configuration
 ```
 
 ## Requirements checklist
@@ -225,4 +294,20 @@ database/100k-...txt        Complete NCSC common-password source
 - [x] Submitted username and assessment-required password safely escaped
 - [x] Passwords are not stored or logged
 - [x] PostgreSQL persistence, health check, and application startup retry
-- [x] No MFA, password rotation, or Questions 5–9 functionality added
+- [x] No MFA or password rotation added
+
+### Question 5
+
+- [x] Real-PostgreSQL Mocha/Supertest integration tests
+- [x] Headless-Chrome Selenium tests over an isolated HTTP endpoint
+- [x] OWASP Dependency-Check with HTML artifact and CVSS 7 threshold
+- [x] Additional runtime `npm audit --omit=dev`
+- [x] Push, pull-request, and manual GitHub Actions triggers
+
+### Question 6
+
+- [x] ESLint 9 flat configuration for Node.js, browser, and test files
+- [x] Recommended `eslint-plugin-security` analysis
+- [x] SARIF generation and `ESLint-Security-Report` artifact
+- [x] Best-effort GitHub Code Scanning upload with minimum permissions
+- [x] Questions 7–9 and SonarQube are not implemented
