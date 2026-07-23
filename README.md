@@ -161,6 +161,10 @@ The **Q5-Q6 Security Testing** GitHub Actions workflow runs on pushes to
   `eslint-plugin-security` rules, SARIF generation, artifact upload, and
   best-effort GitHub Code Scanning upload.
 
+Mocha's test-only transitive `diff` and `serialize-javascript` packages are
+overridden to patched releases; the full npm audit is clean after those
+compatibility-tested overrides.
+
 CI uses an isolated PostgreSQL service and unique test usernames. Test cleanup
 deletes only records created by that test run. The temporary HTTP endpoint is
 used only inside CI; public application behavior remains the Q1/Q2 HTTPS

@@ -165,9 +165,6 @@ jobs:
         working-directory: app
         run: npm audit --omit=dev
 
-      - name: Remove installed modules before repository scan
-        run: rm -rf app/node_modules
-
       - name: Run OWASP Dependency-Check without NVD API key
         if: env.NVD_API_KEY == ''
         uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c
