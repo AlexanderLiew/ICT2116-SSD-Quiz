@@ -16,7 +16,39 @@ services:
     networks:
       - ssd-network
 
+  gitserver:
+    image: docker.gitea.com/gitea:1.24.7
+    environment:
+      USER_UID: "1000"
+      USER_GID: "1000"
+      GITEA__database__DB_TYPE: sqlite3
+      GITEA__database__PATH: /data/gitea/gitea.db
+      GITEA__repository__DEFAULT_BRANCH: main
+      GITEA__security__INSTALL_LOCK: "true"
+      GITEA__server__DOMAIN: 127.0.0.1
+      GITEA__server__ROOT_URL: http://127.0.0.1:3000/
+      GITEA__server__SSH_DOMAIN: 127.0.0.1
+      GITEA__server__SSH_PORT: "2222"
+      GITEA__service__DISABLE_REGISTRATION: "true"
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    volumes:
+      - gitea-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1:3000/api/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ssd-network
+
 networks:
   ssd-network:
     name: ict2216-ssd-network
     driver: bridge
+
+volumes:
+  gitea-data:
+    name: ict2216-gitea-data
