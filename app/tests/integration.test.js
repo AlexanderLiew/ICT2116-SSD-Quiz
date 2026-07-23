@@ -134,7 +134,7 @@ describe('Q5 account-creation integration', () => {
         })
         .expect(400);
 
-      assert.match(response.text, new RegExp(invalidCase.message));
+      assert.ok(response.text.includes(invalidCase.message));
       assert.match(response.text, /<title>Create account<\/title>/);
       assert.equal(await countTestRecords(), beforeCount);
     });

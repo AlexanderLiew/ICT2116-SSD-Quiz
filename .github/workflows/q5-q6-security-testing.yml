@@ -201,3 +201,52 @@ jobs:
           path: reports/dependency-check
           if-no-files-found: warn
           retention-days: 30
+
+  eslint-security:
+    name: ESLint security
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Run ESLint security analysis
+        working-directory: app
+        run: npm run lint:security
+
+      - name: Generate ESLint SARIF
+        if: always()
+        continue-on-error: true
+        working-directory: app
+        run: npm run lint:sarif
+
+      - name: Upload ESLint SARIF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ESLint-Security-Report
+          path: app/reports/eslint-results.sarif
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: app/reports/eslint-results.sarif
+          category: eslint-security

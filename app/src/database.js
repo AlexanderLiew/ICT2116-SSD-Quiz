@@ -46,6 +46,7 @@ async function ensureTables() {
 }
 
 async function importCommonPasswords() {
+  // eslint-disable-next-line security/detect-non-literal-fs-filename -- Trusted deployment path, never HTTP input.
   const contents = await fs.readFile(passwordFile, 'utf8');
   const passwords = [...new Set(
     contents.split(/\r?\n/).filter((password) => password !== ''),

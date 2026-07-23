@@ -54,6 +54,7 @@ describe('Q5 Selenium UI over HTTP', function seleniumSuite() {
       await fs.mkdir(screenshotDirectory, { recursive: true });
       const safeName = this.currentTest.title.replaceAll(/[^a-z0-9]+/gi, '-');
       const image = await driver.takeScreenshot();
+      // eslint-disable-next-line security/detect-non-literal-fs-filename -- Sanitized name under a fixed test directory.
       await fs.writeFile(
         path.join(screenshotDirectory, `${safeName}.png`),
         image,

@@ -7,7 +7,10 @@
   "scripts": {
     "start": "node server.js",
     "test:integration": "mocha --timeout 30000 tests/integration.test.js",
-    "test:ui": "mocha --timeout 90000 tests/SeleniumTest.mjs"
+    "test:ui": "mocha --timeout 90000 tests/SeleniumTest.mjs",
+    "lint": "eslint .",
+    "lint:security": "eslint . --max-warnings 0",
+    "lint:sarif": "node -e \"require('node:fs').mkdirSync('reports', { recursive: true })\" && eslint . --format @microsoft/eslint-formatter-sarif --output-file reports/eslint-results.sarif"
   },
   "dependencies": {
     "express": "5.2.1",
@@ -17,6 +20,11 @@
     "node": ">=22"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@microsoft/eslint-formatter-sarif": "^3.1.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-security": "^4.0.1",
+    "globals": "^17.7.0",
     "mocha": "^11.7.6",
     "selenium-webdriver": "^4.46.0",
     "supertest": "^7.2.2"
