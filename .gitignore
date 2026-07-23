@@ -22,3 +22,12 @@ reports/
 app/reports/
 coverage/
 app/coverage/
+
+# Local SonarQube credentials, scanner work, data, and evidence exports.
+.scannerwork/
+.sonar/
+sonarqube-data/
+sonar-postgres-data/
+sonarqube-extensions/
+sonarqube-logs/
+evidence/Q8-initial-sonarqube-scan/results/*.token
