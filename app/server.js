@@ -129,7 +129,10 @@ app.post('/account', async (request, response, next) => {
     }
 
     await createStudent(username);
-    return response.type('html').send(renderWelcome(username, password));
+    return response
+      .set('Cache-Control', 'no-store')
+      .type('html')
+      .send(renderWelcome(username, password));
   } catch (error) {
     return next(error);
   }
