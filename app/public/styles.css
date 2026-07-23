@@ -1,0 +1,44 @@
+body {
+  margin: 0;
+  color: #17324d;
+  background: #f4f7fa;
+  font-family: Arial, sans-serif;
+}
+
+main {
+  width: min(32rem, calc(100% - 3rem));
+  margin: 4rem auto;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  background: white;
+  box-shadow: 0 0.5rem 2rem rgb(23 50 77 / 12%);
+}
+
+form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+input,
+button {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.75rem;
+  font: inherit;
+}
+
+button {
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+
+.error {
+  color: #a40000;
+}
+
+.submitted-password {
+  overflow-wrap: anywhere;
+  padding: 0.75rem;
+  border: 1px solid #b7c4d1;
+  white-space: pre-wrap;
+}

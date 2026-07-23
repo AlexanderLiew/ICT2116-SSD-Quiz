@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create account</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <h1>Create account</h1>
+    <p>Use at least 10 printable ASCII characters. Long passwords and passphrases are encouraged.</p>
+    <!-- SERVER_ERROR -->
+    <p id="validation-error" class="error" role="alert" aria-live="polite"></p>
+    <form id="account-form" action="/account" method="post" novalidate>
+      <label for="username">Username</label>
+      <input id="username" name="username" type="text" maxlength="100" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" required>
+
+      <button type="submit">Create account</button>
+    </form>
+  </main>
+</body>
+</html>

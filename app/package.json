@@ -1,0 +1,17 @@
+{
+  "name": "ict2116-ssd-quiz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ICT2216 Q4 secure account-creation application",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "5.2.1",
+    "pg": "8.22.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -4,6 +4,9 @@ services:
   webserver:
     build:
       context: ./webserver
+    depends_on:
+      app:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
@@ -12,6 +15,48 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 5s
+    networks:
+      - ssd-network
+
+  app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    environment:
+      PORT: "3000"
+      DB_HOST: database
+      DB_PORT: "5432"
+      DB_NAME: ssd_quiz
+      DB_USER: admin
+      DB_PASSWORD: 2401499@sit.singaporetech.edu.sg
+      PASSWORD_FILE: /app/data/100k-most-used-passwords-NCSC.txt
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - ssd-network
+
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 2401499@sit.singaporetech.edu.sg
+      POSTGRES_DB: ssd_quiz
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
       start_period: 5s
     networks:
       - ssd-network
@@ -52,3 +97,5 @@ networks:
 volumes:
   gitea-data:
     name: ict2216-gitea-data
+  postgres-data:
+    name: ict2216-postgres-data
