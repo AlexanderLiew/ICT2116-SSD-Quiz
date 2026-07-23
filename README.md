@@ -4,8 +4,8 @@ Student: Liew Jin Hsuen Alexander (`2401499`)
 
 Email: `2401499@sit.singaporetech.edu.sg`
 
-This repository implements Questions 1–6 of the ICT2216 practical test.
-Questions 7–9 are intentionally not implemented.
+This repository implements Questions 1–8 of the ICT2216 practical test.
+Question 9 is intentionally not implemented.
 
 ## Architecture
 
@@ -17,9 +17,16 @@ All services share the dedicated `ict2216-ssd-network`.
 | `app` | Node.js/Express account-creation application | Internal port `3000` only |
 | `database` | PostgreSQL application database | Internal port `5432` only |
 | `gitserver` | Gitea local Git server with SQLite | HTTP `3000`, SSH `2222` |
+| `sonar-database` | Dedicated SonarQube PostgreSQL database | Internal port `5432` only |
+| `sonarqube` | SonarQube Community Build | HTTP `9000` |
+| `sonar-scanner` | Opt-in Docker scanner profile | No published port |
 
 Gitea data is stored in the `ict2216-gitea-data` volume. PostgreSQL data is
 stored in the `ict2216-postgres-data` volume.
+
+SonarQube uses separate persistent data, extensions, logs, and PostgreSQL
+volumes. Removing Compose volumes also permanently deletes the SonarQube
+project and its preserved Q8 dashboard.
 
 ## Requirements and startup
 
@@ -214,6 +221,40 @@ GitHub SARIF upload requires Code Scanning availability and
 `security-events: write`. The SARIF artifact is still uploaded if repository
 visibility, plan, or token permissions prevent Code Scanning upload.
 
+## Questions 7 and 8: SonarQube
+
+- SonarQube Community Build: `26.7.0.124771`
+- SonarQube PostgreSQL: `postgres:17-alpine`
+- Scanner image: `12.1.0.3233_8.0.1`
+- Embedded SonarScanner CLI: `8.0.1.6346`
+- URL: <http://127.0.0.1:9000/>
+- Project key: `ict2216-ssd-quiz-2401499`
+
+Start and check the services:
+
+```sh
+docker compose up -d sonar-database sonarqube
+docker compose ps sonar-database sonarqube
+curl http://127.0.0.1:9000/api/system/status
+```
+
+Generate a project or global analysis token under **My Account > Security**.
+Set it only in the local environment and run the pinned Docker scanner:
+
+```sh
+export SONAR_TOKEN='token entered locally'
+docker compose run --rm sonar-scanner
+```
+
+The scanner covers first-party Node/Express, browser JavaScript, HTML, CSS,
+Docker, JSON, YAML, SQL/text configuration, and test files. It excludes
+dependencies, generated output, volume data, credentials, certificates, and
+the large NCSC password file. Exact scope and initial results are preserved in
+`evidence/Q8-initial-sonarqube-scan/`.
+
+**Do not alter, review, suppress, or resolve the initial findings until
+Question 9. Question 9 is not implemented.**
+
 ## Verification
 
 ```sh
@@ -236,7 +277,7 @@ docker-compose exec database psql -U admin -d ssd_quiz \
 docker-compose exec database psql -U admin -d ssd_quiz \
   -c '\d "2401499"'
 
-docker-compose logs webserver app database gitserver
+docker-compose logs webserver app database gitserver sonarqube sonar-database
 git ls-remote local-git
 ```
 
@@ -259,7 +300,7 @@ this project again. Do not change the committed port mappings for assessment.
 ## File structure
 
 ```text
-docker-compose.yml          Four services, health checks, network, and volumes
+docker-compose.yml          Application, Git, SonarQube, scanner, network, volumes
 webserver/                  Nginx TLS generation and application reverse proxy
 app/                        Express app, frontend validation, and package lock
 database/init.sql           Idempotent PostgreSQL table definitions
@@ -267,6 +308,8 @@ database/100k-...txt        Complete NCSC common-password source
 .github/workflows/          Q5/Q6 GitHub Actions workflow
 app/tests/                  Mocha/Supertest and Selenium test suites
 app/eslint.config.mjs       ESLint 9 flat security configuration
+sonar-project.properties    Q7/Q8 source, test, and exclusion scope
+evidence/Q8-.../            Preserved initial scan metrics and issues
 ```
 
 ## Requirements checklist
@@ -314,4 +357,16 @@ app/eslint.config.mjs       ESLint 9 flat security configuration
 - [x] Recommended `eslint-plugin-security` analysis
 - [x] SARIF generation and `ESLint-Security-Report` artifact
 - [x] Best-effort GitHub Code Scanning upload with minimum permissions
-- [x] Questions 7–9 and SonarQube are not implemented
+
+### Question 7
+
+- [x] Pinned SonarQube Community Build and dedicated PostgreSQL service
+- [x] Persistent SonarQube and database volumes with health checks
+- [x] Pinned, opt-in Docker SonarScanner using `SONAR_TOKEN`
+
+### Question 8
+
+- [x] Correctly scoped initial analysis committed before scanning
+- [x] Initial metrics and all Bugs, Vulnerabilities, and Hotspots preserved
+- [x] No finding fixed, suppressed, dismissed, or reviewed
+- [x] Question 9 is not implemented
