@@ -5,7 +5,9 @@
   "description": "ICT2216 Q4 secure account-creation application",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test:integration": "mocha --timeout 30000 tests/integration.test.js",
+    "test:ui": "mocha --timeout 90000 tests/SeleniumTest.mjs"
   },
   "dependencies": {
     "express": "5.2.1",
@@ -13,5 +15,10 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.6",
+    "selenium-webdriver": "^4.46.0",
+    "supertest": "^7.2.2"
   }
 }

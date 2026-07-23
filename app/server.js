@@ -168,7 +168,14 @@ async function shutdown() {
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-start().catch((error) => {
-  console.error('Application startup failed:', error.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  start().catch((error) => {
+    console.error('Application startup failed:', error.message);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  app,
+  start,
+};
