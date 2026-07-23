@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  webserver:
+    build:
+      context: ./webserver
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "curl", "-fk", "https://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - ssd-network
+
+networks:
+  ssd-network:
+    name: ict2216-ssd-network
+    driver: bridge

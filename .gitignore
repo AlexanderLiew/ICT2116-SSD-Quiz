@@ -1,0 +1,10 @@
+# Do not commit locally generated TLS material.
+*.key
+*.pem
+*.crt
+
+# Local and editor files.
+.env
+.idea/
+.vscode/
+*.log
