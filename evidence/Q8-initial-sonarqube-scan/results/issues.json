@@ -1,0 +1,16 @@
+{
+  "bugs": [],
+  "vulnerabilities": [
+    {
+      "key": "55fc31ea-6b8e-4e8d-a7f3-1171deaa0973",
+      "rule": "docker:S6471",
+      "severity": "MINOR",
+      "status": "OPEN",
+      "file": "webserver/Dockerfile",
+      "line": 1,
+      "message": "The \"nginx\" image runs with \"root\" as the default user. Make sure it is safe here.",
+      "suggestedQ9Action": "Assess the image entrypoint and privileged-port requirements, then use a supported non-root Nginx configuration if Q1/Q2 behavior can be preserved."
+    }
+  ],
+  "securityHotspots": []
+}
