@@ -16,3 +16,9 @@ postgres-data/
 *.db
 *.sqlite
 *.sqlite3
+
+# Generated test, coverage, and security reports.
+reports/
+app/reports/
+coverage/
+app/coverage/

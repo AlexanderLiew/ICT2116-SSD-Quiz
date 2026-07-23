@@ -1,0 +1,203 @@
+name: Q5-Q6 Security Testing
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: q5-q6-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-test:
+    name: Integration test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_NAME: ssd_quiz_test
+      DB_USER: admin
+      DB_PASSWORD: ci-test-password
+      PASSWORD_FILE: ${{ github.workspace }}/database/100k-most-used-passwords-NCSC.txt
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: ci-test-password
+          POSTGRES_DB: ssd_quiz_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d ssd_quiz_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Run integration tests
+        working-directory: app
+        run: npm run test:integration
+
+  ui-test:
+    name: UI test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PORT: "3000"
+      UI_BASE_URL: http://127.0.0.1:3000
+      DB_HOST: 127.0.0.1
+      DB_PORT: "5432"
+      DB_NAME: ssd_quiz_test
+      DB_USER: admin
+      DB_PASSWORD: ci-test-password
+      PASSWORD_FILE: ${{ github.workspace }}/database/100k-most-used-passwords-NCSC.txt
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: ci-test-password
+          POSTGRES_DB: ssd_quiz_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U admin -d ssd_quiz_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Confirm Chrome availability
+        run: google-chrome --version
+
+      - name: Start HTTP test application
+        working-directory: app
+        run: |
+          npm start > "$RUNNER_TEMP/ui-app.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/ui-app.pid"
+          for _ in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/health > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/ui-app.log"
+          exit 1
+
+      - name: Run Selenium UI tests over HTTP
+        working-directory: app
+        run: npm run test:ui
+
+      - name: Upload UI failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: UI-Failure-Screenshots
+          path: app/reports/ui-failures
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Stop HTTP test application
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/ui-app.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/ui-app.pid")" 2>/dev/null || true
+          fi
+
+  dependency-check:
+    name: Dependency check
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+
+      - name: Audit runtime dependencies
+        working-directory: app
+        run: npm audit --omit=dev
+
+      - name: Remove installed modules before repository scan
+        run: rm -rf app/node_modules
+
+      - name: Run OWASP Dependency-Check without NVD API key
+        if: env.NVD_API_KEY == ''
+        uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c
+        with:
+          project: ICT2116-SSD-Quiz
+          path: .
+          format: HTML
+          out: reports/dependency-check
+          args: >-
+            --failOnCVSS 7
+            --enableRetired
+
+      - name: Run OWASP Dependency-Check with NVD API key
+        if: env.NVD_API_KEY != ''
+        uses: dependency-check/Dependency-Check_Action@1e54355a8b4c8abaa8cc7d0b70aa655a3bb15a6c
+        with:
+          project: ICT2116-SSD-Quiz
+          path: .
+          format: HTML
+          out: reports/dependency-check
+          args: >-
+            --failOnCVSS 7
+            --enableRetired
+            --nvdApiKey "${{ secrets.NVD_API_KEY }}"
+
+      - name: Upload Dependency-Check report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dependency-Check-Report
+          path: reports/dependency-check
+          if-no-files-found: warn
+          retention-days: 30
