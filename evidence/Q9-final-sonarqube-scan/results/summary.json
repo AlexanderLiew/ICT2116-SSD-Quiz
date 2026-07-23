@@ -1,0 +1,19 @@
+{
+  "projectKey": "ict2216-ssd-quiz-2401499",
+  "scannedCommit": "dc825da6cc0e506908cc3e46eb71c167d70f9635",
+  "analysisId": "63990d43-01cd-453d-ad4d-fb01706727e4",
+  "computeEngineTaskId": "72102ff4-9baf-4e40-b103-2d07c3c13272",
+  "executedAt": "2026-07-23T07:41:53Z",
+  "qualityGate": "OK",
+  "bugs": 0,
+  "vulnerabilities": 0,
+  "securityHotspots": 0,
+  "codeSmells": 0,
+  "reliabilityRating": "A",
+  "securityRating": "A",
+  "maintainabilityRating": "A",
+  "coverage": 0.0,
+  "duplicatedLinesDensity": 0.0,
+  "linesOfCode": 553,
+  "serverWarningCount": 0
+}

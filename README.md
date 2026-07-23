@@ -4,8 +4,7 @@ Student: Liew Jin Hsuen Alexander (`2401499`)
 
 Email: `2401499@sit.singaporetech.edu.sg`
 
-This repository implements Questions 1–8 of the ICT2216 practical test.
-Question 9 is intentionally not implemented.
+This repository implements Questions 1–9 of the ICT2216 practical test.
 
 ## Architecture
 
@@ -252,8 +251,33 @@ dependencies, generated output, volume data, credentials, certificates, and
 the large NCSC password file. Exact scope and initial results are preserved in
 `evidence/Q8-initial-sonarqube-scan/`.
 
-**Do not alter, review, suppress, or resolve the initial findings until
-Question 9. Question 9 is not implemented.**
+The unchanged Q8 baseline is retained for comparison with Question 9.
+
+## Question 9 remediation
+
+Final scanned commit: `dc825da6cc0e506908cc3e46eb71c167d70f9635`.
+
+- Nginx now uses the pinned unprivileged image and runs as UID 101 on internal
+  ports 8080/8443 while host ports remain 80/443.
+- Express error middleware retains four parameters without the unnecessary
+  `void` expression.
+- Integration assertions use Chai `expect`, preserving all security checks.
+- Final SonarQube result: Quality Gate passed; 0 Bugs, 0 Vulnerabilities,
+  0 Hotspots, 0 Code Smells; Reliability, Security, and Maintainability all A.
+- Coverage remains 0.0%; no coverage was fabricated.
+- Final evidence: `evidence/Q9-final-sonarqube-scan/`.
+
+The slow Dependency-Check was not rerun due to the time limit. `npm audit`,
+integration, Selenium, ESLint, service health, HTTPS, Gitea, and SonarQube
+checks passed.
+
+Manual Q9 screenshots:
+
+- Overview: `http://127.0.0.1:9000/dashboard?id=ict2216-ssd-quiz-2401499`
+- Bugs: `http://127.0.0.1:9000/project/issues?id=ict2216-ssd-quiz-2401499&types=BUG`
+- Vulnerabilities: `http://127.0.0.1:9000/project/issues?id=ict2216-ssd-quiz-2401499&types=VULNERABILITY`
+- Hotspots: `http://127.0.0.1:9000/security_hotspots?id=ict2216-ssd-quiz-2401499`
+- Code Smells: `http://127.0.0.1:9000/project/issues?id=ict2216-ssd-quiz-2401499&types=CODE_SMELL`
 
 ## Verification
 
@@ -369,4 +393,10 @@ evidence/Q8-.../            Preserved initial scan metrics and issues
 - [x] Correctly scoped initial analysis committed before scanning
 - [x] Initial metrics and all Bugs, Vulnerabilities, and Hotspots preserved
 - [x] No finding fixed, suppressed, dismissed, or reviewed
-- [x] Question 9 is not implemented
+
+### Question 9
+
+- [x] All seven Q8 findings reviewed and remediated in source
+- [x] Nginx runtime changed to non-root without changing host ports 80/443
+- [x] Final scan passed with zero open issues and all A ratings
+- [x] Separate before-and-after Q9 evidence preserved
